@@ -7,4 +7,8 @@
 !/.idea/icd0019.iml
 !/.idea/modules.xml
 !/lib/hamcrest-all-1.3.jar
-!/lib/junit-4.12.jar
+!/lib/junit-jupiter-api-5.11.3.jar
+!/lib/junit-jupiter-engine-5.11.3.jar
+!/lib/junit-platform-commons-1.11.3.jar
+!/lib/junit-platform-engine-1.11.3.jar
+
