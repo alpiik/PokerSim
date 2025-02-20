@@ -9,30 +9,26 @@ public class StackTrace {
 
     public static void main(String[] args) {
         try {
-            Double finalPrice = calculatePrice();
+            double finalPrice = calculatePrice();
             System.out.println("Final Price: " + finalPrice);
         } catch (IllegalArgumentException e) {
             LOGGER.log(Level.SEVERE, "Error: " + e.getMessage(), e);
         }
     }
 
-    public static Double calculatePrice() {
-        Double basePrice = calculateBasePrice();
+    public static double calculatePrice() {
+        double basePrice = calculateBasePrice();
         return basePrice * (1 + 0.2);
     }
 
-    public static Double calculateBasePrice() {
-        Integer profitConstant = readProfitConstant();
-
-        if (profitConstant == null) {
-            throw new IllegalArgumentException("Profit constant cannot be null.");
-        }
-
-        Double netCost = 100D;
+    public static double calculateBasePrice() {
+        int profitConstant = readProfitConstant();
+        
+        double netCost = 100.0;
         return netCost + (0.1 * profitConstant * netCost);
     }
 
-    public static Integer readProfitConstant() {
+    public static int readProfitConstant() {
         return 5;
     }
 }
