@@ -14,8 +14,10 @@ public class FloatDecomposition {
             float significand = 1.0f + (mantissa / Float.valueOf(1 << 23));
 
             System.out.printf("%s = %s x 2^%s (%s)\n",
-                    value, new BigDecimal(significand),
-                    exponent, new BigDecimal(value));
+                    value,
+                    new BigDecimal(Float.toString(significand)),
+                    exponent,
+                    new BigDecimal(Float.toString(value)));
         }
     }
 }
