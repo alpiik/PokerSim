@@ -5,14 +5,14 @@ import java.util.logging.Logger;
 
 public class StackTrace {
 
-    private static final Logger logger = Logger.getLogger(StackTrace.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(StackTrace.class.getName());
 
     public static void main(String[] args) {
         try {
             Double finalPrice = calculatePrice();
             System.out.println("Final Price: " + finalPrice);
         } catch (IllegalArgumentException e) {
-            logger.log(Level.SEVERE, "Error: " + e.getMessage(), e);
+            LOGGER.log(Level.SEVERE, "Error: " + e.getMessage(), e);
         }
     }
 
