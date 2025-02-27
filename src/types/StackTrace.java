@@ -23,7 +23,7 @@ public class StackTrace {
 
     public static double calculateBasePrice() {
         int profitConstant = readProfitConstant();
-        
+
         double netCost = 100.0;
         return netCost + (0.1 * profitConstant * netCost);
     }
