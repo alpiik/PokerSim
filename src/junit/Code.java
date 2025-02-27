@@ -8,10 +8,7 @@ public class Code {
             return true;
         }
         int remainder = candidate % 11;
-        if (remainder <= 3 || remainder >= 8) {
-            return true;
-        }
-        return false;
+        return remainder <= 3 || remainder >= 8;
     }
 
     public static int longestStreak(String inputString) {
@@ -109,17 +106,16 @@ public class Code {
         int count = 0;
         int sum = 0;
 
-        for (int i = 0; i < integers.length; i++) {
-            if (!arrayContains(uniqueElements, count, integers[i])) {
-                uniqueElements[count] = integers[i];
-                sum += integers[i];
+        for (int num : integers) {
+            if (!arrayContains(uniqueElements, count, num)) {
+                uniqueElements[count] = num;
+                sum += num;
                 count++;
             }
         }
 
         return sum;
     }
-
     private static boolean arrayContains(int[] arr, int size, int value) {
         for (int i = 0; i < size; i++) {
             if (arr[i] == value) {
@@ -128,6 +124,4 @@ public class Code {
         }
         return false;
     }
-
-
 }
