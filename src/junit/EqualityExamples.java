@@ -33,14 +33,14 @@ public class EqualityExamples {
 
     @Test
     public void stringEqualityWithOptimizations() {
-        System.out.println("abc" == "abc");
-        System.out.println("abc" == "a" + "bc");
+        System.out.println("abc".equals("abc"));
+        System.out.println("abc".equals("a" + "bc"));
     }
 
     @Test
     public void stringEquality() {
         String a = "a";
-        System.out.println("abc" == a + "bc");
+        System.out.println("abc".equals(a + "bc"));
         System.out.println("abc".equals(a + "bc"));
     }
 }
