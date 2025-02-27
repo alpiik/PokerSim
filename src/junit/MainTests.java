@@ -8,10 +8,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class MainTests {
 
     @Test
-    public void findsSpecialNumbers() {
-        assertTrue(Code.isSpecial(0));
-
-        // other test cases for isSpecial() method
+    public void testIsSpecial() {
+        assertThat(Code.isSpecial(0));  // tõene
+        assertThat(Code.isSpecial(1));  // tõene
+        assertThat(Code.isSpecial(2));  // tõene
+        assertThat(Code.isSpecial(3));  // tõene
+        assertThat(Code.isSpecial(4));  // väär
+        assertThat(Code.isSpecial(11)); // tõene
+        assertThat(Code.isSpecial(15)); // väär
+        assertThat(Code.isSpecial(36)); // tõene
+        assertThat(Code.isSpecial(37)); // väär
     }
 
     @Test
@@ -31,8 +37,10 @@ public class MainTests {
     public void findsModeFromCharactersInString() {
 
         assertThat(Code.mode(null)).isNull();
+        assertThat(Code.mode("")).isNull();
+        assertThat(Code.mode("abcb")).isEqualTo('b');
+        assertThat(Code.mode("cbbc")).isEqualTo('c');
 
-        // other test cases for mode() method
     }
 
     @Test
