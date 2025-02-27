@@ -70,32 +70,27 @@ public class Code {
         if (integers == null || integers.length == 0) {
             return new int[0];
         }
-
-        int[] temp = new int[integers.length];
-        int count = 0;
-
-        for (int i = 0; i < integers.length; i++) {
-            if (!contains(temp, count, integers[i])) {
-                temp[count] = integers[i];
-                count++;
+        int luger = 0;
+        for (int observable : integers) {
+            boolean duplicate = false;
+            for (int j = 0; j < luger; j++) {
+                if (integers[j] == observable) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate) {
+                integers[luger] = observable;
+                luger++;
             }
         }
-
-        int[] result = new int[count];
-        for (int i = 0; i < count; i++) {
-            result[i] = temp[i];
+        int[] newIntegers = new int[luger];
+        for (int i = 0; i < luger; i++) {
+            newIntegers[i] = integers[i];
         }
-        return result;
+        return newIntegers;
     }
 
-    private static boolean contains(int[] arr, int size, int value) {
-        for (int i = 0; i < size; i++) {
-            if (arr[i] == value) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public static int sumIgnoringDuplicates(int[] integers) {
         if (integers == null || integers.length == 0) {
