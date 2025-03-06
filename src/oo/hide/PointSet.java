@@ -50,7 +50,7 @@ public class PointSet {
         if (this == obj) {
             return true;
         }
-        if (obj == null || !(obj instanceof PointSet)) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
         PointSet other = (PointSet) obj;

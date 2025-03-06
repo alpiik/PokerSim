@@ -20,11 +20,11 @@ public class Point {
         if (this == obj) {
             return true;
         }
-        if (obj == null || getClass() != obj.getClass()) {
+        if (obj == null || !(obj instanceof Point)) {
             return false;
         }
         Point other = (Point) obj;
-        return Objects.equals(this.x, other.x) && Objects.equals(this.y, other.y);
+        return this.x == other.x && this.y == other.y;
     }
     @Override
     public int hashCode() {
