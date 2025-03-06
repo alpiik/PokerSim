@@ -50,19 +50,18 @@ public class PointSet {
         if (this == obj) {
             return true;
         }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        PointSet other = (PointSet) obj;
-        if (this.size != other.size) {
-            return false;
-        }
-        for (int i = 0; i < size; i++) {
-            if (!other.contains(points[i])) {
+        if (obj instanceof PointSet other) {
+            if (this.size != other.size) {
                 return false;
             }
+            for (int i = 0; i < size; i++) {
+                if (!other.contains(points[i])) {
+                    return false;
+                }
+            }
+            return true;
         }
-        return true;
+        return false;
     }
     public PointSet subtract(PointSet other) {
         PointSet result = new PointSet();
