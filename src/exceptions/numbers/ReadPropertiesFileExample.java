@@ -13,6 +13,18 @@ public class ReadPropertiesFileExample {
 
     private static final Logger LOGGER = Logger.getLogger(ReadPropertiesFileExample.class.getName());
 
+    public static void main(String[] args) {
+        String filePath = "src/exceptions/numbers/numbers_en.properties";
+
+        try {
+            Properties properties = loadProperties(filePath);
+            System.out.println(properties.containsKey(String.valueOf(1)));
+            System.out.println(properties.getProperty(String.valueOf(1)));
+        } catch (MissingLanguageFileException | BrokenLanguageFileException e) {
+            LOGGER.log(Level.SEVERE, "Error loading properties file: " + e.getMessage(), e);
+        }
+    }
+
     public static Properties loadProperties(String filePath) throws MissingLanguageFileException, BrokenLanguageFileException {
         Properties properties = new Properties();
 
@@ -23,10 +35,8 @@ public class ReadPropertiesFileExample {
             return properties;
 
         } catch (FileNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "Language file not found: " + filePath);
             throw new MissingLanguageFileException("Language file not found: " + filePath, e);
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error reading language file: " + filePath);
             throw new BrokenLanguageFileException("Error reading language file: " + filePath, e);
         }
     }
