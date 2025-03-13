@@ -16,12 +16,8 @@ public class ReadPropertiesFileExample {
         String filePath = "src/exceptions/numbers/numbers_en.properties";
         Properties properties = loadProperties(filePath);
 
-        if (properties != null) {
-            System.out.println(properties.containsKey("1"));
-            System.out.println(properties.getProperty("1"));
-        } else {
-            System.out.println("Failed to load properties file.");
-        }
+        System.out.println(properties.containsKey("1"));
+        System.out.println(properties.getProperty("1"));
     }
 
     public static Properties loadProperties(String filePath) {
@@ -32,10 +28,8 @@ public class ReadPropertiesFileExample {
             is = new FileInputStream(filePath);
             InputStreamReader reader = new InputStreamReader(is, StandardCharsets.ISO_8859_1);
             properties.load(reader);
-            return properties;
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error loading properties file: " + filePath, e);
-            return null;
         } finally {
             if (is != null) {
                 try {
@@ -45,5 +39,7 @@ public class ReadPropertiesFileExample {
                 }
             }
         }
+
+        return properties; // Tagastame alati vähemalt tühja `Properties` objekti
     }
 }
