@@ -58,10 +58,10 @@ public class NumberConverter {
         int ones = number % 10;
         String tensWord = properties.getProperty(String.valueOf(tens));
         String delimiter = properties.getProperty("tens-after-delimiter", "");
-        if (ones != 0) {
-            return tensWord + delimiter + getNumberWord(ones);
-        } else {
+        if (ones == 0) {
             return tensWord;
+        } else {
+            return tensWord + delimiter + getNumberWord(ones);
         }
     }
 
@@ -72,10 +72,10 @@ public class NumberConverter {
         String hundredSuffix = properties.getProperty("hundred");
         String beforeDelimiter = properties.getProperty("hundred-before-delimiter", "");
         String afterDelimiter = properties.getProperty("hundred-after-delimiter", "");
-        if (remainder != 0) {
-            return hundredWord + beforeDelimiter + hundredSuffix + afterDelimiter + numberInWords(remainder);
-        } else {
+        if (remainder == 0) {
             return hundredWord + beforeDelimiter + hundredSuffix;
+        } else {
+            return hundredWord + beforeDelimiter + hundredSuffix + afterDelimiter + numberInWords(remainder);
         }
     }
 
@@ -86,10 +86,10 @@ public class NumberConverter {
         String thousandSuffix = properties.getProperty("thousand");
         String beforeDelimiter = properties.getProperty("thousand-before-delimiter", "");
         String afterDelimiter = properties.getProperty("thousand-after-delimiter", "");
-        if (remainder != 0) {
-            return thousandWord + beforeDelimiter + thousandSuffix + afterDelimiter + numberInWords(remainder);
-        } else {
+        if (remainder == 0) {
             return thousandWord + beforeDelimiter + thousandSuffix;
+        } else {
+            return thousandWord + beforeDelimiter + thousandSuffix + afterDelimiter + numberInWords(remainder);
         }
     }
 
@@ -100,10 +100,10 @@ public class NumberConverter {
         String millionSuffix = (millions == 1) ? properties.getProperty("million-singular") : properties.getProperty("million-plural");
         String beforeDelimiter = properties.getProperty("million-before-delimiter", "");
         String afterDelimiter = properties.getProperty("million-after-delimiter", "");
-        if (remainder != 0) {
-            return millionWord + beforeDelimiter + millionSuffix + afterDelimiter + numberInWords(remainder);
-        } else {
+        if (remainder == 0) {
             return millionWord + beforeDelimiter + millionSuffix;
+        } else {
+            return millionWord + beforeDelimiter + millionSuffix + afterDelimiter + numberInWords(remainder);
         }
     }
 
@@ -114,10 +114,10 @@ public class NumberConverter {
         String billionSuffix = (billions == 1) ? properties.getProperty("billion-singular") : properties.getProperty("billion-plural");
         String beforeDelimiter = properties.getProperty("billion-before-delimiter", "");
         String afterDelimiter = properties.getProperty("billion-after-delimiter", "");
-        if (remainder != 0) {
-            return billionWord + beforeDelimiter + billionSuffix + afterDelimiter + numberInWords(remainder);
-        } else {
+        if (remainder == 0) {
             return billionWord + beforeDelimiter + billionSuffix;
+        } else {
+            return billionWord + beforeDelimiter + billionSuffix + afterDelimiter + numberInWords(remainder);
         }
     }
 }
