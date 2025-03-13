@@ -16,17 +16,20 @@ public class ReadPropertiesFileExample {
 
         try {
             is = new FileInputStream(filePath);
-            InputStreamReader reader = new InputStreamReader(is, StandardCharsets.ISO_8859_1);
+
+            InputStreamReader reader = new InputStreamReader(
+                    is, StandardCharsets.ISO_8859_1);
+
             properties.load(reader);
-        } catch (IOException e) {
-            System.err.println("Error reading properties file: " + e.getMessage());
-            e.printStackTrace();  // Logib vea
+        } catch (Exception e) {
+            // handle exceptions
         } finally {
             close(is);
         }
 
         System.out.println(properties.containsKey(String.valueOf(1)));
         System.out.println(properties.getProperty(String.valueOf(1)));
+
     }
 
     private static void close(FileInputStream is) {
@@ -36,9 +39,7 @@ public class ReadPropertiesFileExample {
 
         try {
             is.close();
-        } catch (IOException e) {
-            System.err.println("Failed to close FileInputStream: " + e.getMessage());
-            e.printStackTrace();
-        }
+        } catch (IOException ignored) {}
     }
+
 }
