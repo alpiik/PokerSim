@@ -22,7 +22,10 @@ public class ReadPropertiesFileExample {
 
             properties.load(reader);
         } catch (Exception e) {
-            // handle exceptions
+            // Log the exception or print a message
+            System.err.println("An error occurred while reading the properties file: " + e.getMessage());
+            // Optionally, rethrow the exception as a runtime exception
+            throw new RuntimeException("Failed to read properties file", e);
         } finally {
             close(is);
         }
@@ -39,7 +42,11 @@ public class ReadPropertiesFileExample {
 
         try {
             is.close();
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            // Log the exception or print a message
+            System.err.println("An error occurred while closing the stream: " + e.getMessage());
+            // Alternatively, add a comment explaining why the exception is ignored
+            // For example: "Ignoring IOException because the stream is already closed or no further action is needed."
+        }
     }
-
 }
