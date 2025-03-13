@@ -22,14 +22,15 @@ public class ReadPropertiesFileExample {
 
             properties.load(reader);
         } catch (Exception e) {
-            // handle exceptions
+            // Properly handle the exception
+            System.err.println("Error loading properties file: " + e.getMessage());
+            e.printStackTrace();
         } finally {
             close(is);
         }
 
         System.out.println(properties.containsKey(String.valueOf(1)));
         System.out.println(properties.getProperty(String.valueOf(1)));
-
     }
 
     private static void close(FileInputStream is) {
@@ -39,7 +40,8 @@ public class ReadPropertiesFileExample {
 
         try {
             is.close();
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            System.err.println("Error closing file: " + e.getMessage());
+        }
     }
-
 }
