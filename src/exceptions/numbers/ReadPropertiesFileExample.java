@@ -5,8 +5,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ReadPropertiesFileExample {
+
+    private static final Logger LOGGER = Logger.getLogger(ReadPropertiesFileExample.class.getName());
 
     public static void main(String[] args) {
         String filePath = "src/exceptions/numbers/numbers_en.properties";
@@ -19,8 +23,7 @@ public class ReadPropertiesFileExample {
             InputStreamReader reader = new InputStreamReader(is, StandardCharsets.ISO_8859_1);
             properties.load(reader);
         } catch (IOException e) {
-            System.err.println("Error reading properties file: " + e.getMessage());
-            e.printStackTrace();  // Logib vea
+            LOGGER.log(Level.SEVERE, "Error reading properties file: " + e.getMessage(), e);
         } finally {
             close(is);
         }
@@ -37,8 +40,7 @@ public class ReadPropertiesFileExample {
         try {
             is.close();
         } catch (IOException e) {
-            System.err.println("Failed to close FileInputStream: " + e.getMessage());
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Failed to close FileInputStream: " + e.getMessage(), e);
         }
     }
 }
