@@ -20,39 +20,36 @@ public class NumberConverter {
             throw new RuntimeException("Failed to load language file: " + fileName, e);
         }
     }
-
     public String numberInWords(Integer number) {
         if (number < 0) {
             throw new IllegalArgumentException("Number must be non-negative.");
         }
         if (number < 20) {
-            return getNumberWord(number);
+            return getNumber(number);
         }
         if (number < 100) {
-            return getTensWord(number);
+            return getTens(number);
         }
         if (number < 1000) {
-            return getHundredsWord(number);
+            return getHundreds(number);
         }
         if (number < 1_000_000) {
-            return getThousandsWord(number);
+            return getThousands(number);
         }
         if (number < 1_000_000_000) {
-            return getMillionsWord(number);
+            return getMillions(number);
         }
         if (number < 1_000_000_000_000L) {
-            return getBillionsWord(number);
+            return getBillions(number);
         }
         throw new IllegalArgumentException("Number is too large.");
     }
-
-    private String getNumberWord(int number) {
+    private String getNumber(int number) {
         return properties.getProperty(String.valueOf(number));
     }
-
-    private String getTensWord(int number) {
+    private String getTens(int number) {
         if (number < 20) {
-            return getNumberWord(number);
+            return getNumber(number);
         }
         int tens = number / 10 * 10;
         int ones = number % 10;
@@ -61,11 +58,10 @@ public class NumberConverter {
         if (ones == 0) {
             return tensWord;
         } else {
-            return tensWord + delimiter + getNumberWord(ones);
+            return tensWord + delimiter + getNumber(ones);
         }
     }
-
-    private String getHundredsWord(int number) {
+    private String getHundreds(int number) {
         int hundreds = number / 100;
         int remainder = number % 100;
         String hundredWord = properties.getProperty(String.valueOf(hundreds));
@@ -78,8 +74,7 @@ public class NumberConverter {
             return hundredWord + beforeDelimiter + hundredSuffix + afterDelimiter + numberInWords(remainder);
         }
     }
-
-    private String getThousandsWord(int number) {
+    private String getThousands(int number) {
         int thousands = number / 1000;
         int remainder = number % 1000;
         String thousandWord = numberInWords(thousands);
@@ -92,8 +87,7 @@ public class NumberConverter {
             return thousandWord + beforeDelimiter + thousandSuffix + afterDelimiter + numberInWords(remainder);
         }
     }
-
-    private String getMillionsWord(int number) {
+    private String getMillions(int number) {
         int millions = number / 1_000_000;
         int remainder = number % 1_000_000;
         String millionWord = numberInWords(millions);
@@ -106,8 +100,7 @@ public class NumberConverter {
             return millionWord + beforeDelimiter + millionSuffix + afterDelimiter + numberInWords(remainder);
         }
     }
-
-    private String getBillionsWord(int number) {
+    private String getBillions(int number) {
         int billions = number / 1_000_000_000;
         int remainder = number % 1_000_000_000;
         String billionWord = numberInWords(billions);
