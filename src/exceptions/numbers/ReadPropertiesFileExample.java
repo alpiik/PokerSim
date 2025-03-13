@@ -5,12 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ReadPropertiesFileExample {
-    // Create a logger for this class
-    private static final Logger LOGGER = Logger.getLogger(ReadPropertiesFileExample.class.getName());
 
     public static void main(String[] args) {
         String filePath = "src/exceptions/numbers/numbers_en.properties";
@@ -26,14 +22,14 @@ public class ReadPropertiesFileExample {
 
             properties.load(reader);
         } catch (Exception e) {
-            // Properly handle the exception using logging
-            LOGGER.log(Level.SEVERE, "Error loading properties file", e);
+            // handle exceptions
         } finally {
             close(is);
         }
 
         System.out.println(properties.containsKey(String.valueOf(1)));
         System.out.println(properties.getProperty(String.valueOf(1)));
+
     }
 
     private static void close(FileInputStream is) {
@@ -43,8 +39,7 @@ public class ReadPropertiesFileExample {
 
         try {
             is.close();
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Error closing file", e);
-        }
+        } catch (IOException ignored) {}
     }
+
 }
