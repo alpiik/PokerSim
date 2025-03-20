@@ -40,6 +40,6 @@ public class ReadPropertiesFileExample {
             }
         }
 
-        return properties; // Tagastame alati vähemalt tühja `Properties` objekti
+        return properties;
     }
 }
