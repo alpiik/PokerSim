@@ -39,7 +39,6 @@ public abstract sealed class AbstractSalesAnalyser permits EstonianTaxSalesAnaly
         for (SalesRecord record : records) {
             itemQuantities.put(record.productId(), itemQuantities.getOrDefault(record.productId(), 0) + record.itemsSold());
         }
-
         return itemQuantities.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .limit(3)
