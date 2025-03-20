@@ -1,96 +1,129 @@
 package exceptions.numbers;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class NumberConverter {
 
     private final Properties properties;
 
-    public NumberConverter(String language) {
+    public NumberConverter(String lang) {
+        properties = new Properties();
+        String fileName = "exceptions/numbers/numbers_" + lang + ".properties";
 
-        this.properties = new Properties();
-
-        String filePath = String.format("src/exceptions/numbers/numbers_%s.properties", language);
-        FileInputStream is = null;
-        try {
-            is = new FileInputStream(filePath);
-            InputStreamReader reader = new InputStreamReader(
-                    is, StandardCharsets.ISO_8859_1);
-            properties.load(reader);
-            if (properties.isEmpty()) {
-                throw new MissingTranslationException(language);
+        try (InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName)) {
+            if (input == null) {
+                throw new MissingLanguageFileException("Language file not found: " + fileName);
             }
+            properties.load(input);
         } catch (IOException e) {
-            throw new MissingLanguageFileException(language, e);
-        } catch (IllegalArgumentException e) {
-            throw new BrokenLanguageFileException(language, e);
-        } finally {
-            close(is);
+            throw new BrokenLanguageFileException("Failed to load language file: " + fileName, e);
+        }
+
+        // Kontrollime, kas olulised tõlked on olemas
+        if (!properties.containsKey("1") || !properties.containsKey("100")) {
+            throw new MissingTranslationException("Essential translations are missing in " + fileName);
         }
     }
-    private static void close(FileInputStream is) {
-        if (is == null) {
-            return;
-        }
-        try {
-            is.close();
-        } catch (IOException ignored) {
-        }
-    }
+
     public String numberInWords(Integer number) {
-        if (properties.containsKey(String.valueOf(number))) {
-            return properties.getProperty(String.valueOf(number));
-        } else if (number >= 10 && number < 20) {
-            return isTeens(number);
-        } else if (number >= 20 && number < 100) {
-            return isTens(number);
-        } else if (number >= 100 && number < 200) {
-            return isHundreds(number);
+        if (number < 0) {
+            throw new IllegalArgumentException("Number must be non-negative.");
         }
-        return "";
-    }
-    private String isTeens(int number) {
-        int ones = number % 10;
-        return properties.getProperty(String.valueOf(ones)) + properties.getProperty(String.valueOf("teen"));
-    }
-    private String isTens(int number) {
-        String result = "";
-        int ones = number % 10;
-        int tens = number - ones;
-        if (properties.containsKey(String.valueOf(tens))) {
-            result += properties.getProperty(String.valueOf(tens));
-        } else {
-            int ten = tens / 10;
-            result += properties.getProperty(String.valueOf(ten))
-                    + properties.getProperty(String.valueOf("tens-suffix"));
+        if (number < 20) {
+            return getNumber(number);
         }
+        if (number < 100) {
+            return getTens(number);
+        }
+        if (number < 1000) {
+            return getHundreds(number);
+        }
+        if (number < 1_000_000) {
+            return getThousands(number);
+        }
+        if (number < 1_000_000_000) {
+            return getMillions(number);
+        }
+        if (number < 1_000_000_000_000L) {
+            return getBillions(number);
+        }
+        throw new IllegalArgumentException("Number is too large.");
+    }
+
+    private String getNumber(int number) {
+        return properties.getProperty(String.valueOf(number));
+    }
+
+    private String getTens(int number) {
+        if (number < 20) {
+            return getNumber(number);
+        }
+        int tens = number / 10 * 10;
+        int ones = number % 10;
+        String tensWord = properties.getProperty(String.valueOf(tens));
+        String delimiter = properties.getProperty("tens-after-delimiter", "");
         if (ones == 0) {
-            return result;
-        } result += properties.getProperty(String.valueOf("tens-after-delimiter"))
-                + properties.getProperty(String.valueOf(ones));
-        return result;
+            return tensWord;
+        } else {
+            return tensWord + delimiter + getNumber(ones);
+        }
     }
-    private String isHundreds(int number) {
+
+    private String getHundreds(int number) {
         int hundreds = number / 100;
-        int remainder = number - (hundreds * 100);
+        int remainder = number % 100;
+        String hundredWord = properties.getProperty(String.valueOf(hundreds));
+        String hundredSuffix = properties.getProperty("hundred");
+        String beforeDelimiter = properties.getProperty("hundred-before-delimiter", "");
+        String afterDelimiter = properties.getProperty("hundred-after-delimiter", "");
         if (remainder == 0) {
-            return properties.getProperty(String.valueOf(hundreds))
-                    + properties.getProperty(String.valueOf("hundred-before-delimiter"))
-                    + properties.getProperty(String.valueOf("hundred"));
+            return hundredWord + beforeDelimiter + hundredSuffix;
+        } else {
+            return hundredWord + beforeDelimiter + hundredSuffix + afterDelimiter + numberInWords(remainder);
         }
-        else if (remainder > 0) {
-            return properties.getProperty(String.valueOf(hundreds))
-                    + properties.getProperty(String.valueOf("hundred-before-delimiter"))
-                    + properties.getProperty(String.valueOf("hundred"))
-                    + properties.getProperty(String.valueOf("hundred-after-delimiter"))
-                    + numberInWords(remainder);
-        }
-        return "";
     }
 
+    private String getThousands(int number) {
+        int thousands = number / 1000;
+        int remainder = number % 1000;
+        String thousandWord = numberInWords(thousands);
+        String thousandSuffix = properties.getProperty("thousand");
+        String beforeDelimiter = properties.getProperty("thousand-before-delimiter", "");
+        String afterDelimiter = properties.getProperty("thousand-after-delimiter", "");
+        if (remainder == 0) {
+            return thousandWord + beforeDelimiter + thousandSuffix;
+        } else {
+            return thousandWord + beforeDelimiter + thousandSuffix + afterDelimiter + numberInWords(remainder);
+        }
+    }
 
+    private String getMillions(int number) {
+        int millions = number / 1_000_000;
+        int remainder = number % 1_000_000;
+        String millionWord = numberInWords(millions);
+        String millionSuffix = (millions == 1) ? properties.getProperty("million-singular") : properties.getProperty("million-plural");
+        String beforeDelimiter = properties.getProperty("million-before-delimiter", "");
+        String afterDelimiter = properties.getProperty("million-after-delimiter", "");
+        if (remainder == 0) {
+            return millionWord + beforeDelimiter + millionSuffix;
+        } else {
+            return millionWord + beforeDelimiter + millionSuffix + afterDelimiter + numberInWords(remainder);
+        }
+    }
+
+    private String getBillions(int number) {
+        int billions = number / 1_000_000_000;
+        int remainder = number % 1_000_000_000;
+        String billionWord = numberInWords(billions);
+        String billionSuffix = (billions == 1) ? properties.getProperty("billion-singular") : properties.getProperty("billion-plural");
+        String beforeDelimiter = properties.getProperty("billion-before-delimiter", "");
+        String afterDelimiter = properties.getProperty("billion-after-delimiter", "");
+        if (remainder == 0) {
+            return billionWord + beforeDelimiter + billionSuffix;
+        } else {
+            return billionWord + beforeDelimiter + billionSuffix + afterDelimiter + numberInWords(remainder);
+        }
+    }
 }
