@@ -21,15 +21,23 @@ public class NumberConverter {
             InputStreamReader reader = new InputStreamReader(
                     is, StandardCharsets.ISO_8859_1);
             properties.load(reader);
-            if (properties.isEmpty()) {
-                throw new MissingTranslationException(language);
-            }
+            validateEssentialTranslations(language);
         } catch (IOException e) {
             throw new MissingLanguageFileException(language, e);
         } catch (IllegalArgumentException e) {
             throw new BrokenLanguageFileException(language, e);
         } finally {
             close(is);
+        }
+    }
+    private void validateEssentialTranslations(String language) {
+        // Check for essential translations (0-9, "teen", "tens-suffix", etc.)
+        String[] essentialKeys = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "teen", "tens-suffix", "hundred", "hundred-before-delimiter", "hundred-after-delimiter", "tens-after-delimiter"};
+
+        for (String key : essentialKeys) {
+            if (!properties.containsKey(key)) {
+                throw new MissingTranslationException(language);
+            }
         }
     }
     private static void close(FileInputStream is) {
@@ -73,7 +81,8 @@ public class NumberConverter {
         }
         if (ones == 0) {
             return result;
-        } result += properties.getProperty(String.valueOf("tens-after-delimiter"))
+        }
+        result += properties.getProperty(String.valueOf("tens-after-delimiter"))
                 + properties.getProperty(String.valueOf(ones));
         return result;
     }
@@ -84,8 +93,7 @@ public class NumberConverter {
             return properties.getProperty(String.valueOf(hundreds))
                     + properties.getProperty(String.valueOf("hundred-before-delimiter"))
                     + properties.getProperty(String.valueOf("hundred"));
-        }
-        else if (remainder > 0) {
+        } else if (remainder > 0) {
             return properties.getProperty(String.valueOf(hundreds))
                     + properties.getProperty(String.valueOf("hundred-before-delimiter"))
                     + properties.getProperty(String.valueOf("hundred"))
@@ -94,6 +102,4 @@ public class NumberConverter {
         }
         return "";
     }
-
-
 }
