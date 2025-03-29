@@ -131,7 +131,6 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
         if (typeCompare != 0) {
             return typeCompare;
         }
-
         List<Card> thisSorted = this.getSortedCards();
         List<Card> otherSorted = other.getSortedCards();
 
@@ -141,7 +140,6 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
                 return cardCompare;
             }
         }
-
         return 0;
     }
 }
