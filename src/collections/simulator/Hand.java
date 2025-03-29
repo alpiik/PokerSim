@@ -2,9 +2,6 @@ package collections.simulator;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.function.Function;
 
 public class Hand implements Iterable<Card>, Comparable<Hand> {
 
@@ -19,24 +16,21 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
         return cards.toString();
     }
 
-    private static final Map<Function<Hand, Boolean>, HandType> HAND_RANKINGS = new LinkedHashMap<>();
-    static {
-        HAND_RANKINGS.put(Hand::isStraightFlush, HandType.STRAIGHT_FLUSH);
-        HAND_RANKINGS.put(Hand::isFourOfAKind, HandType.FOUR_OF_A_KIND);
-        HAND_RANKINGS.put(Hand::isFullHouse, HandType.FULL_HOUSE);
-        HAND_RANKINGS.put(Hand::isFlush, HandType.FLUSH);
-        HAND_RANKINGS.put(Hand::isStraight, HandType.STRAIGHT);
-        HAND_RANKINGS.put(Hand::isTrips, HandType.TRIPS);
-        HAND_RANKINGS.put(Hand::isTwoPairs, HandType.TWO_PAIRS);
-        HAND_RANKINGS.put(Hand::isOnePair, HandType.ONE_PAIR);
-    }
-
     public HandType getHandType() {
-        for (var entry : HAND_RANKINGS.entrySet()) {
-            if (entry.getKey().apply(this)) {
-                return entry.getValue();
-            }
-        }
+        boolean flush = isFlush();
+        boolean straight = isStraight();
+        Map<Card.CardValue, Integer> valueCounts = getValueCounts();
+        List<Integer> counts = new ArrayList<>(valueCounts.values());
+        counts.sort(Collections.reverseOrder());
+
+        if (flush && straight) return HandType.STRAIGHT_FLUSH;
+        if (counts.get(0) == 4) return HandType.FOUR_OF_A_KIND;
+        if (counts.get(0) == 3 && counts.get(1) == 2) return HandType.FULL_HOUSE;
+        if (flush) return HandType.FLUSH;
+        if (straight) return HandType.STRAIGHT;
+        if (counts.get(0) == 3) return HandType.TRIPS;
+        if (counts.get(0) == 2 && counts.get(1) == 2) return HandType.TWO_PAIRS;
+        if (counts.get(0) == 2) return HandType.ONE_PAIR;
         return HandType.HIGH_CARD;
     }
 
