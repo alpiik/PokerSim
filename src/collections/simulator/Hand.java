@@ -17,14 +17,30 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
     }
 
     public HandType getHandType() {
-        if (isStraightFlush()) return HandType.STRAIGHT_FLUSH;
-        if (isFourOfAKind()) return HandType.FOUR_OF_A_KIND;
-        if (isFullHouse()) return HandType.FULL_HOUSE;
-        if (isFlush()) return HandType.FLUSH;
-        if (isStraight()) return HandType.STRAIGHT;
-        if (isTrips()) return HandType.TRIPS;
-        if (isTwoPairs()) return HandType.TWO_PAIRS;
-        if (isOnePair()) return HandType.ONE_PAIR;
+        if (isStraightFlush()) {
+            return HandType.STRAIGHT_FLUSH;
+        }
+        if (isFourOfAKind()) {
+            return HandType.FOUR_OF_A_KIND;
+        }
+        if (isFullHouse()) {
+            return HandType.FULL_HOUSE;
+        }
+        if (isFlush()) {
+            return HandType.FLUSH;
+        }
+        if (isStraight()) {
+            return HandType.STRAIGHT;
+        }
+        if (isTrips()) {
+            return HandType.TRIPS;
+        }
+        if (isTwoPairs()) {
+            return HandType.TWO_PAIRS;
+        }
+        if (isOnePair()) {
+            return HandType.ONE_PAIR;
+        }
         return HandType.HIGH_CARD;
     }
 
@@ -33,7 +49,7 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
     }
 
     private boolean isFourOfAKind() {
-        return getValueCounts().containsValue(4);
+        return getValueCounts().values().stream().anyMatch(count -> count == 4);
     }
 
     private boolean isFullHouse() {
@@ -48,6 +64,7 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
     private boolean isStraight() {
         List<Card> sorted = getSortedCards();
 
+        // normal straight
         boolean normalStraight = true;
         for (int i = 1; i < sorted.size(); i++) {
             if (sorted.get(i).getValue().ordinal() != sorted.get(i-1).getValue().ordinal() + 1) {
@@ -56,7 +73,9 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
             }
         }
 
-        boolean wheelStraight = sorted.get(0).getValue() == Card.CardValue.S2 &&
+        // wheel straight
+        boolean wheelStraight = sorted.size() == 5 &&
+                sorted.get(0).getValue() == Card.CardValue.S2 &&
                 sorted.get(1).getValue() == Card.CardValue.S3 &&
                 sorted.get(2).getValue() == Card.CardValue.S4 &&
                 sorted.get(3).getValue() == Card.CardValue.S5 &&
@@ -66,7 +85,7 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
     }
 
     private boolean isTrips() {
-        return getValueCounts().containsValue(3);
+        return getValueCounts().values().stream().anyMatch(count -> count == 3);
     }
 
     private boolean isTwoPairs() {
@@ -74,7 +93,7 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
     }
 
     private boolean isOnePair() {
-        return getValueCounts().containsValue(2);
+        return getValueCounts().values().stream().anyMatch(count -> count == 2);
     }
 
     private Map<Card.CardValue, Integer> getValueCounts() {
