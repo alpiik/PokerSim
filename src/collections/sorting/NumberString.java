@@ -1,67 +1,65 @@
 package collections.sorting;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class NumberString implements Comparable<NumberString> {
     public String initialValue;
     public List<List<Character>> streaks;
 
     public NumberString(String input) {
+
         initialValue = input;
-        List<Character> chars = new ArrayList<>();
-        for (char c : input.toCharArray()) {
-            chars.add(c);
+        List<Character> characters = new ArrayList<>();
+        for (Character c : input.toCharArray()) {
+            characters.add(c);
+
         }
-        this.streaks = getStreakList(chars);
-        sortStreaks();
+        Collections.sort(characters);
+        streaks = getStreakList(characters);
+        Collections.sort(streaks, new LengthAndElementReverseComparator());
     }
 
     public String initialValue() {
+
         return initialValue;
     }
 
     public static List<List<Character>> getStreakList(List<Character> characters) {
-        List<List<Character>> result = new ArrayList<>();
         if (characters.isEmpty()) {
-            return result;
+            return List.of();
         }
+        List<List<Character>> streak = new ArrayList<>();
 
-        List<Character> currentStreak = new ArrayList<>();
-        currentStreak.add(characters.get(0));
-
-        for (int i = 1; i < characters.size(); i++) {
-            Character current = characters.get(i);
-            if (current.equals(currentStreak.get(0))) {
-                currentStreak.add(current);
-            } else {
-                result.add(currentStreak);
-                currentStreak = new ArrayList<>();
-                currentStreak.add(current);
+        Character previous = null;
+        for (Character character : characters) {
+            if (!character.equals(previous)) {
+                streak.add(new ArrayList<>());
             }
-        }
-        result.add(currentStreak);
-        return result;
-    }
 
-    private void sortStreaks() {
-        streaks.sort(new LengthAndElementReverseComparator());
+            streak.getLast().add(character);
+            previous = character;
+        }
+
+
+        return streak;
     }
 
     @Override
-    public int compareTo(NumberString o) {
-        int minSize = Math.min(this.streaks.size(), o.streaks.size());
-        for (int i = 0; i < minSize; i++) {
-            List<Character> thisStreak = this.streaks.get(i);
-            List<Character> otherStreak = o.streaks.get(i);
-            int lengthCompare = Integer.compare(otherStreak.size(), thisStreak.size());
-            if (lengthCompare != 0) {
-                return lengthCompare;
+    public int compareTo(NumberString other) {
+        int length = Math.min(streaks.size(), other.streaks.size());
+        for (int i = 0; i < length; i++) {
+            List<Character> a = streaks.get(i);
+            List<Character> b = other.streaks.get(i);
+
+            if (a.size() != b.size()) {
+                return a.size() - b.size();
             }
-            int charCompare = Character.compare(otherStreak.get(0), thisStreak.get(0));
-            if (charCompare != 0) {
-                return charCompare;
+            else if (a.getFirst() != b.getFirst()) {
+                return a.getFirst() - b.getFirst();
             }
         }
-        return Integer.compare(o.streaks.size(), this.streaks.size());
+        return streaks.size() - other.streaks.size();
     }
 }
