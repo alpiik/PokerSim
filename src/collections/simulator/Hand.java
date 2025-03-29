@@ -16,12 +16,10 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
     }
 
     public HandType getHandType() {
-        final boolean flush = isFlush();
-        final boolean straight = isStraight();
         final Map<Card.CardValue, Integer> valueCounts = getValueCounts();
         final List<Integer> counts = getSortedCounts(valueCounts);
 
-        if (flush && straight) {
+        if (isFlush() && isStraight()) {
             return HandType.STRAIGHT_FLUSH;
         }
         if (hasCount(counts, 4)) {
@@ -30,10 +28,10 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
         if (isFullHouse(counts)) {
             return HandType.FULL_HOUSE;
         }
-        if (flush) {
+        if (isFlush()) {
             return HandType.FLUSH;
         }
-        if (straight) {
+        if (isStraight()) {
             return HandType.STRAIGHT;
         }
         if (hasCount(counts, 3)) {
