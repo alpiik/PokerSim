@@ -125,8 +125,12 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
         if (this.getHandType() == HandType.STRAIGHT) {
             boolean thisWheel = isWheelStraight(thisSorted);
             boolean otherWheel = isWheelStraight(otherSorted);
-            if (thisWheel && !otherWheel) return -1;
-            if (!thisWheel && otherWheel) return 1;
+            if (thisWheel && !otherWheel) {
+                return -1;
+            }
+            if (!thisWheel && otherWheel) {
+                return 1;
+            }
         }
         for (int i = thisSorted.size() - 1; i >= 0; i--) {
             int cardCompare = thisSorted.get(i).compareTo(otherSorted.get(i));
