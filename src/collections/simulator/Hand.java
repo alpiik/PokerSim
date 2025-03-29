@@ -2,6 +2,9 @@ package collections.simulator;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 public class Hand implements Iterable<Card>, Comparable<Hand> {
 
@@ -16,30 +19,23 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
         return cards.toString();
     }
 
+    private static final Map<Function<Hand, Boolean>, HandType> HAND_RANKINGS = new LinkedHashMap<>();
+    static {
+        HAND_RANKINGS.put(Hand::isStraightFlush, HandType.STRAIGHT_FLUSH);
+        HAND_RANKINGS.put(Hand::isFourOfAKind, HandType.FOUR_OF_A_KIND);
+        HAND_RANKINGS.put(Hand::isFullHouse, HandType.FULL_HOUSE);
+        HAND_RANKINGS.put(Hand::isFlush, HandType.FLUSH);
+        HAND_RANKINGS.put(Hand::isStraight, HandType.STRAIGHT);
+        HAND_RANKINGS.put(Hand::isTrips, HandType.TRIPS);
+        HAND_RANKINGS.put(Hand::isTwoPairs, HandType.TWO_PAIRS);
+        HAND_RANKINGS.put(Hand::isOnePair, HandType.ONE_PAIR);
+    }
+
     public HandType getHandType() {
-        if (isStraightFlush()) {
-            return HandType.STRAIGHT_FLUSH;
-        }
-        if (isFourOfAKind()) {
-            return HandType.FOUR_OF_A_KIND;
-        }
-        if (isFullHouse()) {
-            return HandType.FULL_HOUSE;
-        }
-        if (isFlush()) {
-            return HandType.FLUSH;
-        }
-        if (isStraight()) {
-            return HandType.STRAIGHT;
-        }
-        if (isTrips()) {
-            return HandType.TRIPS;
-        }
-        if (isTwoPairs()) {
-            return HandType.TWO_PAIRS;
-        }
-        if (isOnePair()) {
-            return HandType.ONE_PAIR;
+        for (var entry : HAND_RANKINGS.entrySet()) {
+            if (entry.getKey().apply(this)) {
+                return entry.getValue();
+            }
         }
         return HandType.HIGH_CARD;
     }
@@ -129,17 +125,14 @@ public class Hand implements Iterable<Card>, Comparable<Hand> {
         if (typeCompare != 0) {
             return typeCompare;
         }
-
         List<Card> thisSorted = this.getSortedCards();
         List<Card> otherSorted = other.getSortedCards();
-
         for (int i = thisSorted.size() - 1; i >= 0; i--) {
             int cardCompare = thisSorted.get(i).compareTo(otherSorted.get(i));
             if (cardCompare != 0) {
                 return cardCompare;
             }
         }
-
         return 0;
     }
 }
