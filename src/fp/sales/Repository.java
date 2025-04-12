@@ -23,10 +23,10 @@ public class Repository {
                     .map(this::createEntry)
                     .toList();
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            System.err.println("Error reading sales data file: " + e.getMessage());
             return List.of();
         } catch (RuntimeException e) {
-            System.err.println(e.getMessage());
+            System.err.println("Error processing sales data stream: " + e.getMessage());
             return List.of();
         }
     }
@@ -40,8 +40,8 @@ public class Repository {
             Double amount = Double.parseDouble(parts[6].trim().replace(',', '.'));
             return new Entry(rowNo, productId, date, state, category, amount);
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException | DateTimeParseException e) {
-            System.err.println(String.join("\t", parts) + e.getMessage());
-            throw new RuntimeException(String.join("\t", parts), e);
+            System.err.println("Skipping malformed line due to parsing error: " + String.join("\t", parts) + " | Error: " + e.getMessage());
+            throw new RuntimeException("Failed to parse entry: " + String.join("\t", parts), e);
         }
     }
 }
