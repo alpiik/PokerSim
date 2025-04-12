@@ -9,11 +9,9 @@ import java.util.stream.Collectors;
 
 public class Analyser {
 
-    private final Repository repository;
     private final AccountingService accountingService;
     private final List<Entry> entries;
     public Analyser(Repository repository, AccountingService accountingService) {
-        this.repository = repository;
         this.accountingService = accountingService;
         this.entries = repository.getEntries();
     }
