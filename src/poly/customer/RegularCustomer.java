@@ -17,17 +17,18 @@ public final class RegularCustomer extends AbstractCustomer {
     public void collectBonusPointsFrom(Order order) {
         if (order.total() >= 100) {
             LocalDate monthAfter = lastOrderDate.plusMonths(1);
+            double bonusAmount = order.total();
 
             if (order.date().isBefore(monthAfter)) {
-                double bonusAmount = order.total() * 1.5;
-                this.bonusPoints += (int) Math.round(bonusAmount);
-            } else {
-                double bonusAmount = order.total();
-                this.bonusPoints += (int) Math.round(bonusAmount);
+                bonusAmount *= 1.5;
             }
+
+            this.bonusPoints += (int) Math.round(bonusAmount);  // <-- only 1 cast
         }
+
         this.lastOrderDate = order.date();
     }
+
 
     public LocalDate getLastOrderDate() {
         return lastOrderDate;
