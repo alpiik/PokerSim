@@ -9,7 +9,7 @@ public final class GoldCustomer extends AbstractCustomer {
     @Override
     public void collectBonusPointsFrom(Order order) {
         if (order.total() >= 100) {
-            this.bonusPoints += (int) (order.total() * 1.5);
+            this.bonusPoints += (order.total() * 3) / 2;
         }
     }
 
