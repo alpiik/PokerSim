@@ -1,7 +1,6 @@
 package poly.customer;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 public final class RegularCustomer extends AbstractCustomer {
@@ -16,24 +15,17 @@ public final class RegularCustomer extends AbstractCustomer {
 
     @Override
     public void collectBonusPointsFrom(Order order) {
-        // Outer if statement
         if (order.total() >= 100) {
-            long daysBetween = ChronoUnit.DAYS.between(lastOrderDate, order.date());
+            LocalDate monthAfter = lastOrderDate.plusMonths(1);
 
-            // Inner if statement - Add braces
-            if (daysBetween < 30) {
-                // Body of inner if - Add braces
-                // Assuming order.total() returns int
-                // Integer arithmetic, no unnecessary cast, no useless parentheses
-                this.bonusPoints += order.total() * 3 / 2;
-            } else { // Else for inner if - Add braces
-                // Body of else - Add braces
-                // Assuming order.total() returns int
-                // Integer arithmetic, no cast needed
-                this.bonusPoints += order.total();
+            if (order.date().isBefore(monthAfter)) {
+                double bonusAmount = order.total() * 1.5;
+                this.bonusPoints += (int) Math.round(bonusAmount);
+            } else {
+                double bonusAmount = order.total();
+                this.bonusPoints += (int) Math.round(bonusAmount);
             }
         }
-        // This line updates the last order date regardless of bonus, it is outside the outer if
         this.lastOrderDate = order.date();
     }
 
