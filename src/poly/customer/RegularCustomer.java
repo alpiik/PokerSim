@@ -16,18 +16,18 @@ public final class RegularCustomer extends AbstractCustomer {
 
     @Override
     public void collectBonusPointsFrom(Order order) {
-        // Outer if statement - no brace warning here
+        // Outer if statement
         if (order.total() >= 100) {
             long daysBetween = ChronoUnit.DAYS.between(lastOrderDate, order.date());
 
-            // Inner if statement - Add braces (likely lines 46)
-            if (daysBetween < 30) { // Likely line 46
+            // Inner if statement - Add braces
+            if (daysBetween < 30) {
                 // Body of inner if - Add braces
                 // Assuming order.total() returns int
-                // Integer arithmetic, remove unnecessary cast (likely line 23) and useless parentheses
+                // Integer arithmetic, no unnecessary cast, no useless parentheses
                 this.bonusPoints += order.total() * 3 / 2;
-            } else { // Likely line 47
-                // Body of else - Add braces (likely line 48)
+            } else { // Else for inner if - Add braces
+                // Body of else - Add braces
                 // Assuming order.total() returns int
                 // Integer arithmetic, no cast needed
                 this.bonusPoints += order.total();
