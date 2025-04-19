@@ -18,13 +18,13 @@ public final class RegularCustomer extends AbstractCustomer {
     public void collectBonusPointsFrom(Order order) {
         if (order.total() >= 100) {
             long daysBetween = ChronoUnit.DAYS.between(lastOrderDate, order.date());
-            if (daysBetween < 30) { // Less than one month
+            if (daysBetween < 30) {
                 this.bonusPoints += (int) (order.total() * 1.5);
             } else {
                 this.bonusPoints += (int) order.total();
             }
         }
-        this.lastOrderDate = order.date(); // Update last order date
+        this.lastOrderDate = order.date();
     }
 
     public LocalDate getLastOrderDate() {
