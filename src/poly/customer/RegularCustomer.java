@@ -23,7 +23,7 @@ public final class RegularCustomer extends AbstractCustomer {
                 bonusAmount *= 1.5;
             }
 
-            this.bonusPoints += (int) Math.round(bonusAmount);  // <-- only 1 cast
+            this.bonusPoints += Long.valueOf(Math.round(bonusAmount)).intValue(); // no cast!
         }
 
         this.lastOrderDate = order.date();
