@@ -48,13 +48,12 @@ public final class RegularCustomer extends AbstractCustomer {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof RegularCustomer that)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        RegularCustomer that = (RegularCustomer) o;
         return Objects.equals(lastOrderDate, that.lastOrderDate);
     }
 
