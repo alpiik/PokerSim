@@ -1,46 +1,55 @@
 package junit.sales;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 public class TopSalesFinder {
 
+    private final Map<String, List<SalesRecord>> salesRecords = new HashMap<>();
+
     public void registerSale(SalesRecord record) {
-
-        // store sales record for later analyses by findItemsSoldOver()
-
+        salesRecords.computeIfAbsent(record.productId(), k -> new ArrayList<>()).add(record);
     }
 
     public SalesRecordResult[] findItemsSoldOver(int amount) {
-
-        // find ids of records that sold over specified amount.
-
-        return new SalesRecordResult[0];
+        return salesRecords.entrySet().stream()
+                .map(entry -> new SalesRecordResult(
+                        entry.getKey(),
+                        entry.getValue().stream()
+                                .mapToInt(record -> record.productPrice() * record.itemsSold())
+                                .sum()))
+                .filter(result -> result.total() > amount)
+                .toArray(SalesRecordResult[]::new);
     }
 
     public void removeSalesRecordsFor(String id) {
-
-        // removes records with specified id
+        salesRecords.remove(id);
     }
 
     public SalesRecord[] getAllRecordsPaged(int pageNumber, int pageSize) {
+        List<SalesRecord> allRecords = salesRecords.values().stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
 
-        // return a slice of all stored records
+        int fromIndex = pageNumber * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, allRecords.size());
 
-        return new SalesRecord[0];
+        if (fromIndex >= allRecords.size()) {
+            return new SalesRecord[0];
+        }
+
+        return allRecords.subList(fromIndex, toIndex).toArray(new SalesRecord[0]);
     }
 
     public int getRecordCount() {
-        // only needed for the sample application
-
-        // returns the count of all records
-
-        return 0;
+        return salesRecords.values().stream()
+                .mapToInt(List::size)
+                .sum();
     }
 
     public void removeRecord(String id) {
-        // only needed for the sample application
-
-        // removes record with specific id
+        salesRecords.keySet().removeIf(key -> key.equals(id));
     }
-
 }
 
 
