@@ -23,14 +23,19 @@ public class TopSalesFinder {
 
         for (int i = 0; i < count; i++) {
             SalesRecord r = records[i];
-            int index = -1;
+            String id = r.productId();
+            int total = r.productPrice() * r.itemsSold();
+            boolean found = false;
+
             for (int j = 0; j < uniqueCount; j++) {
-                if (productIds[j].equals(r.productId())) {
-                    index = j;
+                if (productIds[j].equals(id)) {
+                    totals[j] += total;
+                    found = true;
                     break;
                 }
             }
-            if (index == -1) {
+
+            if (!found) {
                 if (uniqueCount == productIds.length) {
                     String[] newProductIds = new String[productIds.length * 2];
                     int[] newTotals = new int[totals.length * 2];
@@ -41,17 +46,17 @@ public class TopSalesFinder {
                     productIds = newProductIds;
                     totals = newTotals;
                 }
-                productIds[uniqueCount] = r.productId();
-                totals[uniqueCount] = r.productPrice() * r.itemsSold();
+                productIds[uniqueCount] = id;
+                totals[uniqueCount] = total;
                 uniqueCount++;
-            } else {
-                totals[index] += r.productPrice() * r.itemsSold();
             }
         }
 
         int resultCount = 0;
         for (int i = 0; i < uniqueCount; i++) {
-            if (totals[i] > amount) resultCount++;
+            if (totals[i] > amount) {
+                resultCount++;
+            }
         }
 
         SalesRecordResult[] result = new SalesRecordResult[resultCount];
