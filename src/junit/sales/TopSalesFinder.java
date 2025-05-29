@@ -8,21 +8,19 @@ public class TopSalesFinder {
     public void registerSale(SalesRecord record) {
         if (count == records.length) {
             SalesRecord[] newRecords = new SalesRecord[records.length * 2];
-            for (int i = 0; i < records.length; i++) {
-                newRecords[i] = records[i];
-            }
+            System.arraycopy(records, 0, newRecords, 0, records.length);
             records = newRecords;
         }
         records[count++] = record;
     }
 
     public SalesRecordResult[] findItemsSoldOver(int amount) {
-        class Entry {
-            String productId;
-            int total;
-        }
+        ProductTotal[] productTotals = calculateProductTotals();
+        return filterResultsAboveAmount(productTotals, amount);
+    }
 
-        Entry[] entries = new Entry[10];
+    private ProductTotal[] calculateProductTotals() {
+        ProductTotal[] entries = new ProductTotal[10];
         int entryCount = 0;
 
         for (int i = 0; i < count; i++) {
@@ -30,46 +28,51 @@ public class TopSalesFinder {
             String id = r.productId();
             int total = r.productPrice() * r.itemsSold();
 
-            int index = -1;
-            for (int j = 0; j < entryCount; j++) {
-                if (entries[j].productId.equals(id)) {
-                    index = j;
-                    break;
-                }
-            }
-
-            if (index != -1) {
-                entries[index].total += total;
+            int existingIndex = findProductIndex(entries, entryCount, id);
+            if (existingIndex >= 0) {
+                entries[existingIndex].total += total;
             } else {
                 if (entryCount == entries.length) {
-                    Entry[] newEntries = new Entry[entries.length * 2];
-                    for (int j = 0; j < entries.length; j++) {
-                        newEntries[j] = entries[j];
-                    }
+                    ProductTotal[] newEntries = new ProductTotal[entries.length * 2];
+                    System.arraycopy(entries, 0, newEntries, 0, entries.length);
                     entries = newEntries;
                 }
-                Entry e = new Entry();
-                e.productId = id;
-                e.total = total;
-                entries[entryCount++] = e;
+                entries[entryCount++] = new ProductTotal(id, total);
             }
         }
+        return entries;
+    }
 
-        int resultCount = 0;
-        for (int i = 0; i < entryCount; i++) {
-            if (entries[i].total > amount) {
-                resultCount++;
+    private int findProductIndex(ProductTotal[] entries, int entryCount, String productId) {
+        for (int j = 0; j < entryCount; j++) {
+            if (entries[j].productId.equals(productId)) {
+                return j;
             }
         }
+        return -1;
+    }
 
+    private SalesRecordResult[] filterResultsAboveAmount(ProductTotal[] productTotals, int amount) {
+        int resultCount = countProductsAboveAmount(productTotals, amount);
         SalesRecordResult[] result = new SalesRecordResult[resultCount];
         int pos = 0;
-        for (int i = 0; i < entryCount; i++) {
-            if (entries[i].total > amount) {
-                result[pos++] = new SalesRecordResult(entries[i].productId, entries[i].total);
+
+        for (ProductTotal entry : productTotals) {
+            if (entry != null && entry.total > amount) {
+                result[pos++] = new SalesRecordResult(entry.productId, entry.total);
             }
         }
         return result;
+    }
+
+    private int countProductsAboveAmount(ProductTotal[] productTotals, int amount) {
+        int count = 0;
+        for (ProductTotal entry : productTotals) {
+            if (entry != null && entry.total > amount) {
+                count++;
+            }
+        }
+        return count;
     }
 
     public void removeSalesRecordsFor(String id) {
@@ -84,12 +87,12 @@ public class TopSalesFinder {
 
     public SalesRecord[] getAllRecordsPaged(int pageNumber, int pageSize) {
         int start = pageNumber * pageSize;
-        int end = Math.min(start + pageSize, count);
-        int length = Math.max(end - start, 0);
-        SalesRecord[] result = new SalesRecord[length];
-        for (int i = 0; i < length; i++) {
-            result[i] = records[start + i];
+        if (start >= count) {
+            return new SalesRecord[0];
         }
+        int end = Math.min(start + pageSize, count);
+        SalesRecord[] result = new SalesRecord[end - start];
+        System.arraycopy(records, start, result, 0, end - start);
         return result;
     }
 
@@ -99,5 +102,15 @@ public class TopSalesFinder {
 
     public void removeRecord(String id) {
         removeSalesRecordsFor(id);
+    }
+
+    private static class ProductTotal {
+        String productId;
+        int total;
+
+        ProductTotal(String productId, int total) {
+            this.productId = productId;
+            this.total = total;
+        }
     }
 }
