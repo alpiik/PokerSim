@@ -3,6 +3,7 @@ package types;
 public class Order {
 
     public static void main(String[] args) {
+
         method3(method1(), method2());
     }
 

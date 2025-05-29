@@ -6,7 +6,6 @@ import java.util.List;
 public class LengthAndElementReverseComparator implements Comparator<List<Character>> {
     @Override
     public int compare(List<Character> a, List<Character> b) {
-        // First by length descending
         int lengthCompare = Integer.compare(b.size(), a.size());
         if (lengthCompare != 0) {
             return lengthCompare;

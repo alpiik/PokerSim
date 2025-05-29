@@ -30,7 +30,7 @@ public class Code {
             sum += n;
         }
 
-        return Double.valueOf(sum) / Double.valueOf(numbers.length);
+        return (double) sum / numbers.length;
     }
 
     public static Integer minimumElement(int[] integers) {
