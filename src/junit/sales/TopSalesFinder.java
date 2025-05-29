@@ -17,53 +17,56 @@ public class TopSalesFinder {
     }
 
     public SalesRecordResult[] findItemsSoldOver(int amount) {
-        String[] productIds = new String[10];
-        int[] totals = new int[10];
-        int uniqueCount = 0;
+        class Entry {
+            String productId;
+            int total;
+        }
+
+        Entry[] entries = new Entry[10];
+        int entryCount = 0;
 
         for (int i = 0; i < count; i++) {
             SalesRecord r = records[i];
             String id = r.productId();
             int total = r.productPrice() * r.itemsSold();
-            boolean found = false;
 
-            for (int j = 0; j < uniqueCount; j++) {
-                if (productIds[j].equals(id)) {
-                    totals[j] += total;
-                    found = true;
+            int index = -1;
+            for (int j = 0; j < entryCount; j++) {
+                if (entries[j].productId.equals(id)) {
+                    index = j;
                     break;
                 }
             }
 
-            if (!found) {
-                if (uniqueCount == productIds.length) {
-                    String[] newProductIds = new String[productIds.length * 2];
-                    int[] newTotals = new int[totals.length * 2];
-                    for (int j = 0; j < productIds.length; j++) {
-                        newProductIds[j] = productIds[j];
-                        newTotals[j] = totals[j];
+            if (index != -1) {
+                entries[index].total += total;
+            } else {
+                if (entryCount == entries.length) {
+                    Entry[] newEntries = new Entry[entries.length * 2];
+                    for (int j = 0; j < entries.length; j++) {
+                        newEntries[j] = entries[j];
                     }
-                    productIds = newProductIds;
-                    totals = newTotals;
+                    entries = newEntries;
                 }
-                productIds[uniqueCount] = id;
-                totals[uniqueCount] = total;
-                uniqueCount++;
+                Entry e = new Entry();
+                e.productId = id;
+                e.total = total;
+                entries[entryCount++] = e;
             }
         }
 
         int resultCount = 0;
-        for (int i = 0; i < uniqueCount; i++) {
-            if (totals[i] > amount) {
+        for (int i = 0; i < entryCount; i++) {
+            if (entries[i].total > amount) {
                 resultCount++;
             }
         }
 
         SalesRecordResult[] result = new SalesRecordResult[resultCount];
         int pos = 0;
-        for (int i = 0; i < uniqueCount; i++) {
-            if (totals[i] > amount) {
-                result[pos++] = new SalesRecordResult(productIds[i], totals[i]);
+        for (int i = 0; i < entryCount; i++) {
+            if (entries[i].total > amount) {
+                result[pos++] = new SalesRecordResult(entries[i].productId, entries[i].total);
             }
         }
         return result;
