@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Poker Odds Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+<link rel="stylesheet" href="styles/poker-odds.css">
+</head>
+<body>
+<div id="app">
+  <h1>Poker Odds Calculator</h1>
+  <div class="subtitle">Texas Hold'em heads-up equity - Monte Carlo simulation, runs entirely in your browser</div>
+
+  <div class="hands-row">
+    <div class="panel" v-for="(hand, pIdx) in hands" :key="pIdx">
+      <h2>
+        <span><span class="player-color" :style="{background: pIdx === 0 ? '#3b82f6' : '#ef4444'}"></span>Player {{ pIdx + 1 }}</span>
+      </h2>
+      <div class="card-slots">
+        <div class="card-slot" v-for="(c, cIdx) in hand" :key="cIdx">
+          <select v-model="hands[pIdx][cIdx].value">
+            <option value="">Value</option>
+            <option v-for="v in valueOptions" :value="v.code" :key="v.code">{{ v.label }}</option>
+          </select>
+          <select v-model="hands[pIdx][cIdx].suit">
+            <option value="">Suit</option>
+            <option v-for="s in suitOptions" :value="s.code" :key="s.code">{{ s.label }}</option>
+          </select>
+          <div class="card-preview" :class="{empty: !cardLabel(hands[pIdx][cIdx])}">
+            <span v-if="cardLabel(hands[pIdx][cIdx])" :class="suitColorClass(hands[pIdx][cIdx].suit)">{{ cardLabel(hands[pIdx][cIdx]) }}</span>
+            <span v-else>empty</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="community-panel">
+    <h2>Community Cards (optional &mdash; flop/turn/river)</h2>
+    <div class="community-slots">
+      <div class="card-slot" v-for="(c, cIdx) in community" :key="cIdx">
+        <select v-model="community[cIdx].value">
+          <option value="">Value</option>
+          <option v-for="v in valueOptions" :value="v.code" :key="v.code">{{ v.label }}</option>
+        </select>
+        <select v-model="community[cIdx].suit">
+          <option value="">Suit</option>
+          <option v-for="s in suitOptions" :value="s.code" :key="s.code">{{ s.label }}</option>
+        </select>
+        <div class="card-preview" :class="{empty: !cardLabel(community[cIdx])}">
+          <span v-if="cardLabel(community[cIdx])" :class="suitColorClass(community[cIdx].suit)">{{ cardLabel(community[cIdx]) }}</span>
+          <span v-else>empty</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <label class="iter-label">
+      Iterations
+      <input type="number" v-model.number="iterations" min="100" max="500000" step="1000">
+    </label>
+    <button @click="runSimulation" :disabled="running">{{ running ? 'Simulating…' : 'Calculate Odds' }}</button>
+    <button class="secondary" @click="resetAll" :disabled="running">Reset</button>
+  </div>
+
+  <div class="error" v-if="errorMsg">{{ errorMsg }}</div>
+
+  <div class="results" v-if="result">
+    <h2>Result <span style="font-size:12px;color:#888;font-weight:400;">({{ result.trials.toLocaleString() }} trials)</span></h2>
+
+    <div class="bar-wrap">
+      <div class="bar-seg" style="background:#3b82f6" :style="{width: result.p1Win + '%'}" v-if="result.p1Win > 0">{{ result.p1Win.toFixed(1) }}%</div>
+      <div class="bar-seg" style="background:#9ca3af" :style="{width: result.tie + '%'}" v-if="result.tie > 0">{{ result.tie.toFixed(1) }}%</div>
+      <div class="bar-seg" style="background:#ef4444" :style="{width: result.p2Win + '%'}" v-if="result.p2Win > 0">{{ result.p2Win.toFixed(1) }}%</div>
+    </div>
+
+    <div class="result-row">
+      <div class="result-card">
+        <div class="pct" style="color:#3b82f6">{{ result.p1Win.toFixed(2) }}%</div>
+        <div class="label">Player 1 wins</div>
+      </div>
+      <div class="result-card">
+        <div class="pct" style="color:#6b7280">{{ result.tie.toFixed(2) }}%</div>
+        <div class="label">Tie</div>
+      </div>
+      <div class="result-card">
+        <div class="pct" style="color:#ef4444">{{ result.p2Win.toFixed(2) }}%</div>
+        <div class="label">Player 2 wins</div>
+      </div>
+    </div>
+
+    <table class="breakdown">
+      <thead>
+        <tr><th>Final hand type</th><th>Player 1</th><th>Player 2</th></tr>
+      </thead>
+      <tbody>
+        <tr v-for="ht in handTypeOrder" :key="ht">
+          <td>{{ handTypeLabel(ht) }}</td>
+          <td>{{ (result.p1Types[ht] || 0).toFixed(1) }}%</td>
+          <td>{{ (result.p2Types[ht] || 0).toFixed(1) }}%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer-note">Leave community cards blank to simulate from preflop. Fill in flop/turn/river to compute remaining equity.</div>
+</div>
+
+<script>
+const { createApp } = Vue;
+
+const VALUES = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+const SUITS = ["C","D","H","S"];
+const SUIT_SYMBOL = { C: "♣", D: "♦", H: "♥", S: "♠" };
+const HAND_TYPES = ["HIGH_CARD","ONE_PAIR","TWO_PAIRS","TRIPS","STRAIGHT","FLUSH","FULL_HOUSE","FOUR_OF_A_KIND","STRAIGHT_FLUSH"];
+const HAND_TYPE_LABELS = {
+  HIGH_CARD: "High Card",
+  ONE_PAIR: "One Pair",
+  TWO_PAIRS: "Two Pair",
+  TRIPS: "Three of a Kind",
+  STRAIGHT: "Straight",
+  FLUSH: "Flush",
+  FULL_HOUSE: "Full House",
+  FOUR_OF_A_KIND: "Four of a Kind",
+  STRAIGHT_FLUSH: "Straight Flush"
+};
+
+function makeDeck() {
+  const deck = [];
+  for (const v of VALUES) for (const s of SUITS) deck.push({ value: v, suit: s });
+  return deck;
+}
+
+function cardKey(c) { return c.value + c.suit; }
+
+function valueRank(v) { return VALUES.indexOf(v); }
+
+// Evaluate best 5-card hand out of 5,6, or 7 cards. Returns {type, tiebreak: [ints...]} comparable array.
+function evaluate7(cards) {
+  const combos = kCombinations(cards, 5);
+  let best = null;
+  for (const combo of combos) {
+    const score = evaluate5(combo);
+    if (!best || compareScore(score, best) > 0) best = score;
+  }
+  return best;
+}
+
+function kCombinations(arr, k) {
+  const results = [];
+  const combo = [];
+  function go(start) {
+    if (combo.length === k) { results.push(combo.slice()); return; }
+    for (let i = start; i < arr.length; i++) {
+      combo.push(arr[i]);
+      go(i + 1);
+      combo.pop();
+    }
+  }
+  go(0);
+  return results;
+}
+
+function evaluate5(cards) {
+  const ranks = cards.map(c => valueRank(c.value)).sort((a,b) => b-a);
+  const suits = cards.map(c => c.suit);
+  const isFlush = suits.every(s => s === suits[0]);
+
+  const counts = {};
+  for (const r of ranks) counts[r] = (counts[r] || 0) + 1;
+  const countEntries = Object.entries(counts).map(([r,c]) => ({r: parseInt(r), c})).sort((a,b) => b.c - a.c || b.r - a.r);
+
+  const sortedUnique = [...new Set(ranks)].sort((a,b) => b-a);
+  let isStraight = false;
+  let straightHigh = null;
+  if (sortedUnique.length === 5) {
+    if (sortedUnique[0] - sortedUnique[4] === 4) {
+      isStraight = true; straightHigh = sortedUnique[0];
+    } else if (sortedUnique.join(",") === [12,3,2,1,0].join(",")) {
+      // wheel: A,5,4,3,2 -> ranks 12,3,2,1,0
+      isStraight = true; straightHigh = 3; // 5-high straight
+    }
+  }
+
+  const countVals = countEntries.map(e => e.c);
+
+  let typeIdx, tiebreak;
+  if (isStraight && isFlush) {
+    typeIdx = 8; tiebreak = [straightHigh];
+  } else if (countVals[0] === 4) {
+    typeIdx = 7; tiebreak = [countEntries[0].r, countEntries[1].r];
+  } else if (countVals[0] === 3 && countVals[1] === 2) {
+    typeIdx = 6; tiebreak = [countEntries[0].r, countEntries[1].r];
+  } else if (isFlush) {
+    typeIdx = 5; tiebreak = ranks;
+  } else if (isStraight) {
+    typeIdx = 4; tiebreak = [straightHigh];
+  } else if (countVals[0] === 3) {
+    typeIdx = 3; tiebreak = [countEntries[0].r, ...countEntries.slice(1).map(e=>e.r)];
+  } else if (countVals[0] === 2 && countVals[1] === 2) {
+    const pairs = countEntries.filter(e => e.c === 2).map(e => e.r).sort((a,b)=>b-a);
+    const kicker = countEntries.find(e => e.c === 1).r;
+    typeIdx = 2; tiebreak = [...pairs, kicker];
+  } else if (countVals[0] === 2) {
+    typeIdx = 1; tiebreak = [countEntries[0].r, ...countEntries.slice(1).map(e=>e.r)];
+  } else {
+    typeIdx = 0; tiebreak = ranks;
+  }
+
+  return { typeIdx, tiebreak, type: HAND_TYPES[typeIdx] };
+}
+
+function compareScore(a, b) {
+  if (a.typeIdx !== b.typeIdx) return a.typeIdx - b.typeIdx;
+  for (let i = 0; i < Math.max(a.tiebreak.length, b.tiebreak.length); i++) {
+    const av = a.tiebreak[i] ?? -1, bv = b.tiebreak[i] ?? -1;
+    if (av !== bv) return av - bv;
+  }
+  return 0;
+}
+
+createApp({
+  data() {
+    return {
+      hands: [
+        [{ value: "", suit: "" }, { value: "", suit: "" }],
+        [{ value: "", suit: "" }, { value: "", suit: "" }]
+      ],
+      community: [
+        { value: "", suit: "" }, { value: "", suit: "" }, { value: "", suit: "" },
+        { value: "", suit: "" }, { value: "", suit: "" }
+      ],
+      iterations: 20000,
+      running: false,
+      errorMsg: "",
+      result: null,
+      handTypeOrder: HAND_TYPES.slice().reverse(),
+      valueOptions: VALUES.map(v => ({ code: v, label: v })),
+      suitOptions: SUITS.map(s => ({ code: s, label: `${SUIT_SYMBOL[s]} ${ {C:'Clubs',D:'Diamonds',H:'Hearts',S:'Spades'}[s] }` }))
+    };
+  },
+  methods: {
+    cardLabel(c) {
+      if (!c.value || !c.suit) return "";
+      return `${c.value}${SUIT_SYMBOL[c.suit]}`;
+    },
+    suitColorClass(suit) {
+      return (suit === "H" || suit === "D") ? "red-suit" : "black-suit";
+    },
+    handTypeLabel(ht) { return HAND_TYPE_LABELS[ht]; },
+    resetAll() {
+      this.hands = [
+        [{ value: "", suit: "" }, { value: "", suit: "" }],
+        [{ value: "", suit: "" }, { value: "", suit: "" }]
+      ];
+      this.community = Array.from({ length: 5 }, () => ({ value: "", suit: "" }));
+      this.result = null;
+      this.errorMsg = "";
+    },
+    validate() {
+      const used = new Map();
+      const checkCard = (c, label) => {
+        if (!c.value || !c.suit) return null;
+        const key = cardKey(c);
+        if (used.has(key)) {
+          return `Duplicate card: ${c.value}${SUIT_SYMBOL[c.suit]} used in both ${used.get(key)} and ${label}`;
+        }
+        used.set(key, label);
+        return null;
+      };
+      for (let p = 0; p < this.hands.length; p++) {
+        for (let i = 0; i < this.hands[p].length; i++) {
+          const c = this.hands[p][i];
+          if (!c.value || !c.suit) {
+            return { error: `Player ${p + 1} card ${i + 1} is incomplete.` };
+          }
+          const err = checkCard(c, `Player ${p + 1}`);
+          if (err) return { error: err };
+        }
+      }
+      const communityCards = [];
+      for (let i = 0; i < this.community.length; i++) {
+        const c = this.community[i];
+        const hasValue = !!c.value, hasSuit = !!c.suit;
+        if (hasValue !== hasSuit) {
+          return { error: `Community card ${i + 1} is incomplete.` };
+        }
+        if (hasValue && hasSuit) {
+          const err = checkCard(c, "Community");
+          if (err) return { error: err };
+          communityCards.push({ value: c.value, suit: c.suit });
+        }
+      }
+      return { error: null, used, communityCards };
+    },
+    runSimulation() {
+      this.errorMsg = "";
+      this.result = null;
+      const { error, used, communityCards } = this.validate();
+      if (error) { this.errorMsg = error; return; }
+
+      this.running = true;
+      // Defer so the UI can show "Simulating..." before the (synchronous) crunch.
+      setTimeout(() => {
+        try {
+          this.result = this.simulate(communityCards, used);
+        } catch (e) {
+          this.errorMsg = "Simulation error: " + e.message;
+        } finally {
+          this.running = false;
+        }
+      }, 30);
+    },
+    simulate(communityCards, used) {
+      const trials = Math.min(Math.max(this.iterations || 1000, 100), 500000);
+      const p1Hole = this.hands[0].map(c => ({ value: c.value, suit: c.suit }));
+      const p2Hole = this.hands[1].map(c => ({ value: c.value, suit: c.suit }));
+
+      const fullDeck = makeDeck();
+      const usedKeys = new Set(used.keys());
+      const remainingDeck = fullDeck.filter(c => !usedKeys.has(cardKey(c)));
+
+      const neededCommunity = 5 - communityCards.length;
+
+      let p1Wins = 0, p2Wins = 0, ties = 0;
+      const p1TypeCounts = {};
+      const p2TypeCounts = {};
+
+      for (let t = 0; t < trials; t++) {
+        const deck = remainingDeck.slice();
+        shuffle(deck);
+        const board = communityCards.concat(deck.slice(0, neededCommunity));
+
+        const p1Score = evaluate7(p1Hole.concat(board));
+        const p2Score = evaluate7(p2Hole.concat(board));
+
+        p1TypeCounts[p1Score.type] = (p1TypeCounts[p1Score.type] || 0) + 1;
+        p2TypeCounts[p2Score.type] = (p2TypeCounts[p2Score.type] || 0) + 1;
+
+        const cmp = compareScore(p1Score, p2Score);
+        if (cmp > 0) p1Wins++;
+        else if (cmp < 0) p2Wins++;
+        else ties++;
+      }
+
+      const toPct = (counts) => {
+        const out = {};
+        for (const k of Object.keys(counts)) out[k] = (counts[k] / trials) * 100;
+        return out;
+      };
+
+      return {
+        trials,
+        p1Win: (p1Wins / trials) * 100,
+        p2Win: (p2Wins / trials) * 100,
+        tie: (ties / trials) * 100,
+        p1Types: toPct(p1TypeCounts),
+        p2Types: toPct(p2TypeCounts)
+      };
+    }
+  }
+}).mount("#app");
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+</script>
+</body>
+</html>
